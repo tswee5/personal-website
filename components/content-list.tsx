@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExpandableText } from "@/components/expandable-text";
 import type { ContentKind } from "@/lib/content";
 
 const kindHref: Record<ContentKind, string> = {
@@ -29,17 +30,25 @@ export function ContentList({ items }: ContentListProps) {
     <div className="divide-y divide-rule border-y border-rule">
       {items.map((item) => {
         const meta = item.kind === "reading" ? (item.status ?? item.dateRead) : item.publishDate ?? item.status ?? item.dateRead;
-        const className = "grid gap-4 py-5 transition hover:bg-wash/60 sm:grid-cols-[9rem_1fr]";
-        const content = (
-          <>
+        const href = item.externalUrl ?? `${kindHref[item.kind]}/${item.slug}`;
+        const description = item.subtitle ?? item.description ?? item.summary;
+
+        return (
+          <article key={`${item.kind}-${item.slug}`} className="grid gap-4 py-5 transition hover:bg-wash/60 sm:grid-cols-[9rem_1fr]">
             <div className="text-sm text-muted">
               <p className="capitalize">{item.kind}</p>
               <p>{meta}</p>
             </div>
             <div>
-              <h3 className="font-serif text-2xl font-normal leading-tight">{item.title}</h3>
-              <p className="mt-2 max-w-3xl text-muted">{item.subtitle ?? item.description ?? item.summary}</p>
-              {item.externalUrl ? <p className="mt-3 text-sm underline underline-offset-4">Open project</p> : null}
+              <Link className="inline-block font-serif text-2xl font-normal leading-tight underline-offset-4 hover:underline" href={href} target={item.externalUrl ? "_blank" : undefined} rel={item.externalUrl ? "noreferrer" : undefined}>
+                {item.title}
+              </Link>
+              <ExpandableText text={description} className="mt-2 max-w-3xl text-muted" />
+              {item.externalUrl ? (
+                <Link className="mt-3 inline-block text-sm underline underline-offset-4" href={item.externalUrl} target="_blank" rel="noreferrer">
+                  Open project
+                </Link>
+              ) : null}
               {item.tags?.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {item.tags.slice(0, 4).map((tag) => (
@@ -50,17 +59,7 @@ export function ContentList({ items }: ContentListProps) {
                 </div>
               ) : null}
             </div>
-          </>
-        );
-
-        return item.externalUrl ? (
-          <a key={`${item.kind}-${item.slug}`} className={className} href={item.externalUrl} target="_blank" rel="noreferrer">
-            {content}
-          </a>
-        ) : (
-          <Link key={`${item.kind}-${item.slug}`} className={className} href={`${kindHref[item.kind]}/${item.slug}`}>
-            {content}
-          </Link>
+          </article>
         );
       })}
     </div>
