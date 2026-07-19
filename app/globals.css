@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #fbfaf7;
+  color: #171717;
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #171717;
+  color: #fbfaf7;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.editorial-rule {
+  border-top: 1px solid #d8d3ca;
+}
+
+.prose-garden {
+  @apply prose prose-neutral max-w-none prose-headings:font-serif prose-headings:font-normal prose-a:underline prose-a:decoration-rule prose-a:underline-offset-4 prose-blockquote:border-ink prose-blockquote:text-ink;
+}
