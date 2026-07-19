@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { KeyRound, Mail, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 
 export function AdminLogin() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -45,15 +47,16 @@ export function AdminLogin() {
       return;
     }
 
-    window.location.reload();
+    router.replace("/admin");
+    router.refresh();
   }
 
   return (
     <section className="max-w-xl border border-rule bg-paper p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Admin login</p>
-      <h2 className="mt-2 font-serif text-3xl font-normal">Email magic link</h2>
+      <h2 className="mt-2 font-serif text-3xl font-normal">Email and password</h2>
       <p className="mt-3 text-muted">Sign in with the email attached to your Supabase owner profile.</p>
-      <form className="mt-6 space-y-3" onSubmit={sendMagicLink}>
+      <form className="mt-6 space-y-3" onSubmit={signInWithPassword}>
         <label className="flex min-h-12 items-center gap-3 border border-rule px-3">
           <Mail size={17} className="text-muted" />
           <input
@@ -65,13 +68,6 @@ export function AdminLogin() {
             placeholder="you@example.com"
           />
         </label>
-        <button disabled={isSending} className="inline-flex min-h-11 items-center gap-2 bg-ink px-4 text-paper disabled:opacity-50">
-          <Send size={16} />
-          {isSending ? "Sending" : "Send login link"}
-        </button>
-      </form>
-      <div className="my-6 border-t border-rule" />
-      <form className="space-y-3" onSubmit={signInWithPassword}>
         <label className="flex min-h-12 items-center gap-3 border border-rule px-3">
           <KeyRound size={17} className="text-muted" />
           <input
@@ -83,9 +79,16 @@ export function AdminLogin() {
             placeholder="Password"
           />
         </label>
-        <button disabled={isSending} className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 disabled:opacity-50">
+        <button disabled={isSending} className="inline-flex min-h-11 items-center gap-2 bg-ink px-4 text-paper disabled:opacity-50">
           <KeyRound size={16} />
-          {isSending ? "Signing in" : "Sign in with password"}
+          {isSending ? "Signing in" : "Sign in"}
+        </button>
+      </form>
+      <div className="my-6 border-t border-rule" />
+      <form className="space-y-3" onSubmit={sendMagicLink}>
+        <button disabled={isSending || !email} className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 disabled:opacity-50">
+          <Send size={16} />
+          {isSending ? "Sending" : "Email me a backup login link"}
         </button>
       </form>
       {status ? <p className="mt-4 text-sm text-muted">{status}</p> : null}
