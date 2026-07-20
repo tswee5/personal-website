@@ -25,10 +25,17 @@ function ResetPasswordContent() {
   useEffect(() => {
     async function prepareSession() {
       const supabase = createClient();
+      const errorDescription = searchParams.get("error_description");
       const code = searchParams.get("code");
       const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const accessToken = params.get("access_token");
       const refreshToken = params.get("refresh_token");
+      const hashErrorDescription = params.get("error_description");
+
+      if (errorDescription || hashErrorDescription) {
+        setMessage(errorDescription ?? hashErrorDescription ?? "The password reset link could not be used.");
+        return;
+      }
 
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);

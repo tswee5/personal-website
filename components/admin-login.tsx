@@ -60,13 +60,15 @@ export function AdminLogin() {
     setIsSending(true);
     setStatus(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`
+    const response = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
     });
+    const result = (await response.json()) as { error?: string };
 
     setIsSending(false);
-    setStatus(error ? error.message : "Check your email for the change-password link.");
+    setStatus(response.ok ? "Check your email for the change-password link." : result.error ?? "Could not send the change-password link.");
   }
 
   return (
