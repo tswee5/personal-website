@@ -2,12 +2,26 @@ import { ContentList } from "@/components/content-list";
 import { ExpandableText } from "@/components/expandable-text";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { SectionHeading } from "@/components/section-heading";
 import { getPublicCollections } from "@/lib/public-content";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams?: Promise<{
+    code?: string | string[];
+  }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const code = Array.isArray(params?.code) ? params.code[0] : params?.code;
+
+  if (code) {
+    redirect(`/auth/reset-password?code=${encodeURIComponent(code)}`);
+  }
+
   const { interests, projects, reading, topOfMind, writing } = await getPublicCollections();
 
   return (

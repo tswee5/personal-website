@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound, Mail, Send } from "lucide-react";
+import { KeyRound, LifeBuoy, Mail, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 
 export function AdminLogin() {
@@ -51,6 +51,24 @@ export function AdminLogin() {
     router.refresh();
   }
 
+  async function sendPasswordReset() {
+    if (!email) {
+      setStatus("Enter your email first, then click Forgot my password.");
+      return;
+    }
+
+    setIsSending(true);
+    setStatus(null);
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`
+    });
+
+    setIsSending(false);
+    setStatus(error ? error.message : "Check your email for the change-password link.");
+  }
+
   return (
     <section className="max-w-xl border border-rule bg-paper p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Admin login</p>
@@ -85,10 +103,21 @@ export function AdminLogin() {
         </button>
       </form>
       <div className="my-6 border-t border-rule" />
-      <form className="space-y-3" onSubmit={sendMagicLink}>
-        <button disabled={isSending || !email} className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 disabled:opacity-50">
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={isSending || !email}
+          onClick={sendPasswordReset}
+          className="inline-flex min-h-11 items-center gap-2 border border-ink px-4 disabled:opacity-50"
+        >
+          <LifeBuoy size={16} />
+          Forgot my password
+        </button>
+      </div>
+      <form className="mt-3 space-y-3" onSubmit={sendMagicLink}>
+        <button disabled={isSending || !email} className="inline-flex min-h-11 items-center gap-2 border border-rule px-4 disabled:opacity-50">
           <Send size={16} />
-          {isSending ? "Sending" : "Email me a backup login link"}
+          {isSending ? "Sending" : "Email me a secure login link"}
         </button>
       </form>
       {status ? <p className="mt-4 text-sm text-muted">{status}</p> : null}

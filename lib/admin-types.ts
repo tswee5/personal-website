@@ -117,5 +117,4 @@ export type AdminData = {
 export type AdminUser = {
   email: string;
   isOwner: boolean;
-  isLocalBypass?: boolean;
 };

@@ -3,11 +3,10 @@ import { AdminLogin } from "@/components/admin-login";
 import { AdminSetupNotice } from "@/components/admin-setup-notice";
 import type { AdminData } from "@/lib/admin-types";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
-import { createAdminClient, hasLocalAdminBypass } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-async function getAdminData(useServiceRole = false): Promise<AdminData> {
-  const supabase = useServiceRole ? createAdminClient() : await createClient();
+async function getAdminData(): Promise<AdminData> {
+  const supabase = await createClient();
   const [writingResult, readingResult, projectsResult, interestsResult, topOfMindResult, aboutPageResult] = await Promise.all([
     supabase.from("writing").select("*").order("updated_at", { ascending: false }),
     supabase.from("reading").select("*").order("updated_at", { ascending: false }),
@@ -29,13 +28,12 @@ async function getAdminData(useServiceRole = false): Promise<AdminData> {
 
 export default async function AdminPage() {
   const hasConfig = hasSupabaseConfig();
-  const localBypass = hasConfig && hasLocalAdminBypass();
   const supabase = hasConfig ? await createClient() : null;
   const authResult = supabase ? await supabase.auth.getUser() : null;
   const user = authResult?.data.user;
   const profileResult = user ? await supabase?.from("profiles").select("is_owner").eq("id", user.id).single() : null;
   const isOwner = Boolean(profileResult?.data?.is_owner);
-  const adminData = localBypass ? await getAdminData(true) : user && isOwner ? await getAdminData() : null;
+  const adminData = user && isOwner ? await getAdminData() : null;
 
   return (
     <main className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
@@ -43,16 +41,15 @@ export default async function AdminPage() {
       <p className="mt-6 max-w-3xl text-xl leading-8 text-muted">A quiet operating room for publishing, reading capture, drafts, relationships, and media.</p>
       <div className="mt-12">
         {!hasConfig ? <AdminSetupNotice /> : null}
-        {localBypass && adminData ? <AdminConsole initialData={adminData} user={{ email: "Local admin bypass", isOwner: true, isLocalBypass: true }} /> : null}
-        {hasConfig && !localBypass && !user ? <AdminLogin /> : null}
-        {hasConfig && !localBypass && user && !isOwner ? (
+        {hasConfig && !user ? <AdminLogin /> : null}
+        {hasConfig && user && !isOwner ? (
           <section className="max-w-2xl border border-rule bg-paper p-5">
             <p className="text-xs uppercase tracking-[0.16em] text-muted">Access pending</p>
             <h2 className="mt-2 font-serif text-3xl font-normal">Owner access is not enabled for {user.email}</h2>
             <p className="mt-3 text-muted">In Supabase, set this account&apos;s `profiles.is_owner` value to `true`, then refresh this page.</p>
           </section>
         ) : null}
-        {hasConfig && !localBypass && user && isOwner && adminData ? <AdminConsole initialData={adminData} user={{ email: user.email ?? "Signed in", isOwner }} /> : null}
+        {hasConfig && user && isOwner && adminData ? <AdminConsole initialData={adminData} user={{ email: user.email ?? "Signed in", isOwner }} /> : null}
       </div>
     </main>
   );

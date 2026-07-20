@@ -15,7 +15,3 @@ export function createAdminClient() {
     }
   });
 }
-
-export function hasLocalAdminBypass() {
-  return process.env.LOCAL_ADMIN_BYPASS === "true" && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-}

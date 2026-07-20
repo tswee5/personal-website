@@ -307,17 +307,15 @@ export function AdminConsole({ initialData, user }: AdminConsoleProps) {
     setIsSaving(true);
     setStatus(null);
 
-    const { saved, error } = user.isLocalBypass
-      ? await saveViaLocalBypass(table, draft, selectedId, isNew, publish)
-      : table === "reading"
-          ? await saveReading(supabase, draft as ReadingRow, selectedId, isNew, publish, now)
-          : table === "projects"
-            ? await saveProject(supabase, draft as ProjectRow, selectedId, isNew, publish, now)
-            : table === "interests"
-              ? await saveInterest(supabase, draft as InterestRow, selectedId, isNew, publish, now)
-              : table === "top_of_mind"
-                ? await saveTopOfMind(supabase, draft as TopOfMindRow, selectedId, isNew, publish, now)
-                : await saveAboutPage(supabase, draft as AboutPageRow, selectedId, isNew, now);
+    const { saved, error } = table === "reading"
+      ? await saveReading(supabase, draft as ReadingRow, selectedId, isNew, publish, now)
+      : table === "projects"
+        ? await saveProject(supabase, draft as ProjectRow, selectedId, isNew, publish, now)
+        : table === "interests"
+          ? await saveInterest(supabase, draft as InterestRow, selectedId, isNew, publish, now)
+          : table === "top_of_mind"
+            ? await saveTopOfMind(supabase, draft as TopOfMindRow, selectedId, isNew, publish, now)
+            : await saveAboutPage(supabase, draft as AboutPageRow, selectedId, isNew, now);
     setIsSaving(false);
 
     if (error) {
@@ -340,17 +338,15 @@ export function AdminConsole({ initialData, user }: AdminConsoleProps) {
     const supabase = createClient();
     const table = getTableName();
     setIsSaving(true);
-    const { error } = user.isLocalBypass
-      ? await deleteViaLocalBypass(table, selectedId)
-      : table === "reading"
-          ? await supabase.from("reading").delete().eq("id", selectedId)
-          : table === "projects"
-            ? await supabase.from("projects").delete().eq("id", selectedId)
-            : table === "interests"
-              ? await supabase.from("interests").delete().eq("id", selectedId)
-              : table === "top_of_mind"
-                ? await supabase.from("top_of_mind").delete().eq("id", selectedId)
-                : await supabase.from("about_page").delete().eq("id", selectedId);
+    const { error } = table === "reading"
+      ? await supabase.from("reading").delete().eq("id", selectedId)
+      : table === "projects"
+        ? await supabase.from("projects").delete().eq("id", selectedId)
+        : table === "interests"
+          ? await supabase.from("interests").delete().eq("id", selectedId)
+          : table === "top_of_mind"
+            ? await supabase.from("top_of_mind").delete().eq("id", selectedId)
+            : await supabase.from("about_page").delete().eq("id", selectedId);
     setIsSaving(false);
 
     if (error) {
@@ -538,33 +534,6 @@ async function saveAboutPage(supabase: ReturnType<typeof createClient>, item: Ab
     ? await supabase.from("about_page").insert(payload as never).select("*").single()
     : await supabase.from("about_page").update({ ...payload, updated_at: now } as never).eq("id", selectedId).select("*").single();
   return { saved: result.data, error: result.error };
-}
-
-async function saveViaLocalBypass(table: AdminTable, draft: EditableRow, selectedId: string, isNew: boolean, publish: boolean) {
-  const response = await fetch("/api/admin/content", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "save", table, draft, selectedId, isNew, publish })
-  });
-  const result = (await response.json()) as { saved?: EditableRow; error?: string };
-
-  return {
-    saved: result.saved ?? null,
-    error: result.error ? { message: result.error } : null
-  };
-}
-
-async function deleteViaLocalBypass(table: AdminTable, selectedId: string) {
-  const response = await fetch("/api/admin/content", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "delete", table, selectedId })
-  });
-  const result = (await response.json()) as { error?: string };
-
-  return {
-    error: result.error ? { message: result.error } : null
-  };
 }
 
 function upsertLocal(current: AdminData, table: string, saved: EditableRow): AdminData {
